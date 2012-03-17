@@ -8,15 +8,15 @@ Bash Script Completion for maven user, only for commands 'mvn' and 'mvnDebug'
 
 copy the file 'maven-completion.bash' to your home dir.
 
-$ cp maven-completion.bash ~/
+`$ cp maven-completion.bash ~/`
 
 Add to your .bashrc:
 
-source ~/maven-completion.bash
+	source ~/maven-completion.bash
 
 And finally restart the terminal or execute:
 
-$ source ~/.bashrc
+`$ source ~/.bashrc`
 
 
 Author: Francisco Collao
