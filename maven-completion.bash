@@ -16,19 +16,44 @@ _mvn(){
 		local cur="${COMP_WORDS[COMP_CWORD]}"
 		local prev="${COMP_WORDS[COMP_CWORD-1]}"
 
-		if [[ "${cur}" == * ]] ; then
+		if [[ "${cur}" == *:* ]]; then
+			local options="jetty javadoc release"
+
+			case "${prev}" in
+				jetty)
+					COMPREPLY=($(compgen -S ':' -W "${jetty_options}" -- "${cur}"))
+					return 0
+					;;
+				javadoc)
+					return 0
+					;;
+				release)
+					return 0
+					;;
+			esac
+
+			COMPREPLY=( $(compgen -S ':' -W "${options}" -- "${cur}") )
+		else
 			local clean_lifecycle="pre-clean clean post-clean"
+
 			local default_lifecycle="validate initialize generate-sources \
 			process-sources generate-resources process-resources compile \
 			process-classes generate-test-sources process-test-sources \
 			generate-test-resources process-test-resources test-compile \
 			process-test-classes test prepare-package package pre-integration-test \
 			integration-test post-integration-test verify install deploy"
+			
 			local site_lifecycle="pre-site site post-site site-deploy"
 
-			COMPREPLY=( $(compgen -S ' ' -W "${clean_lifecycle} ${default_lifecycle} \
-			${site_lifecycle} $(detect_jetty_plugin)" -- "${cur}") )
+			local plugins="jetty|javadoc|release"
 
+			if [[ "${cur}" =~ ${plugins} ]] ; then
+				COMPREPLY=( $(compgen -S ':' -W "${clean_lifecycle} ${default_lifecycle}" ) )
+			else
+				local replaced_plugins=`echo "${plugins}" | tr '|' ' '`
+				COMPREPLY=( $(compgen -S ' ' -W "${clean_lifecycle} ${default_lifecycle} \
+				${site_lifecycle} ${replaced_plugins}" -- "${cur}") )
+			fi
 		fi
 
 		if [[ "${cur}" == -D* ]] ; then
@@ -40,7 +65,7 @@ _mvn(){
 			local options="-am -amd -B -C -c -cpu -D -e -emp -ep -f -fae \
 			-ff -fn -gs -h -l -N -npr -npu -nsu -o -P -pl -q -rf -s -T -t \
 			-U -up -V -v -X"
-			COMPREPLY=( $(compgen -S ' ' -W "${options}" -- "${cur}"))
+			COMPREPLY=( $(compgen -S ' ' -W "${options}" -- "${cur}") )
 		fi
 
 		if [[ "${cur}" == --* ]] ; then
@@ -51,9 +76,11 @@ _mvn(){
 			--global-settings --help --log-file --non-recursive --no-plugin-registry \
 			--no-plugin-updates --no-snapshot-updates --no-snapshot-updates \
 			--activate-profiles --projects --quiet --resume-from --settings \
-			--threads --toolchains --show-version --debug (detect_jetty_plugin)"
-			COMPREPLY=( $(compgen -S ' ' -W "${options}" -- "${cur}"))
+			--threads --toolchains --show-version --debug"
+			COMPREPLY=( $(compgen -S ' ' -W "${options}" -- "${cur}") )
 		fi
+
+		
 	else
 		# if pom.xml file isn't exist in directory
 		COMPREPLY=()
