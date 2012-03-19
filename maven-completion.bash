@@ -2,6 +2,12 @@
 
 # 
 # Completion for mvn and mvnDebug
+#
+# Lifecycle default complete
+# Options for mvn and mvnDebug
+#
+# Author: Francisco Collao
+#
 
 _mvn(){
 	# if pom.xml file exist in directory
@@ -9,48 +15,45 @@ _mvn(){
 		COMPREPLY=()
 		local cur="${COMP_WORDS[COMP_CWORD]}"
 		local prev="${COMP_WORDS[COMP_CWORD-1]}"
-		local opts="clean install package test site:site javadoc"
 
-		local jetty_plugin_enable=`grep -i -c maven-jetty-plugin pom.xml`
+		if [[ "${cur}" == * ]] ; then
+			local clean_lifecycle="pre-clean clean post-clean"
+			local default_lifecycle="validate initialize generate-sources \
+			process-sources generate-resources process-resources compile \
+			process-classes generate-test-sources process-test-sources \
+			generate-test-resources process-test-resources test-compile \
+			process-test-classes test prepare-package package pre-integration-test \
+			integration-test post-integration-test verify install deploy"
+			local site_lifecycle="pre-site site post-site site-deploy"
 
-		if [ ${jetty_plugin_enable} == 1 ]; then
-			opts="${opts} jetty:run"
+			COMPREPLY=( $(compgen -S ' ' -W "${clean_lifecycle} ${default_lifecycle} \
+			${site_lifecycle} $(detect_jetty_plugin)" -- "${cur}") )
+
 		fi
 
-
-		case "${prev}" in
-			clean)
-				local clean_opts="install package deploy test compile test-compile"
-				COMPREPLY=($(compgen -W "${clean_opts}"))
-				return 0
-				;;
-			install)
-				local install_opts="package deploy test -DskipTest=true"
-				COMPREPLY=($(compgen -W "${install_opts}"))
-				return 0
-				;;
-			deploy)
-				local deploy_opts="-DskipTests=true"
-				COMPREPLY=(${deploy_opts})
-				return 0
-				;;
-
-			javadoc)
-				local javadoc_opts="javadoc jar test-javadoc"
-				COMPREPLY=($(compgen -W "${javadoc_opts}"))
-				return 0
-				;;
-			*)
-				COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
-				return 0
-				;;
-		esac
-
-
-		if [[ "${cur}" == -*  ]] ;then
-			COMPREPLY=( $( compgen -W '-DskipTest=true' -- "${cur}") )
+		if [[ "${cur}" == -D* ]] ; then
+			local options="-DskipTests -Dmaven.test.skip=true"
+			COMPREPLY=( $(compgen -S ' ' -W "${options}" -- "${cur}") )
 		fi
 
+		if [[ "${cur}" == -* ]] ; then
+			local options="-am -amd -B -C -c -cpu -D -e -emp -ep -f -fae \
+			-ff -fn -gs -h -l -N -npr -npu -nsu -o -P -pl -q -rf -s -T -t \
+			-U -up -V -v -X"
+			COMPREPLY=( $(compgen -S ' ' -W "${options}" -- "${cur}"))
+		fi
+
+		if [[ "${cur}" == --* ]] ; then
+			local options="--version --update-plugins --update-snapshots --offline \
+			--also-make --also-make-dependents --batch-mode --strict-checksums \
+			--lax-checksums --check-plugin-updates --define --errors --encrypt-master-password \
+			--encrypt-password --file --fail-at-end --fail-fast --fail-never \
+			--global-settings --help --log-file --non-recursive --no-plugin-registry \
+			--no-plugin-updates --no-snapshot-updates --no-snapshot-updates \
+			--activate-profiles --projects --quiet --resume-from --settings \
+			--threads --toolchains --show-version --debug (detect_jetty_plugin)"
+			COMPREPLY=( $(compgen -S ' ' -W "${options}" -- "${cur}"))
+		fi
 	else
 		# if pom.xml file isn't exist in directory
 		COMPREPLY=()
@@ -61,12 +64,19 @@ _mvn(){
 		if [[ "${cur}" == -* ]]	; then
 			COMPREPLY=( $( compgen -W '-v --version' -- "${cur}" ))
 		fi
-
-
 	fi
 
 	return 0
 } &&
+
+#Detect maven-jetty-plugin in pom.xml file and add options to completion
+detect_jetty_plugin(){
+	local jetty_plugin_enable=`grep -i -c maven-jetty-plugin pom.xml`
+	
+	if [ ${jetty_plugin_enable} == 1 ]; then
+		echo "jetty:run jetty:war"
+	fi
+}
 
 complete -F _mvn mvn
 complete -F _mvn mvnDebug
