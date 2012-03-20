@@ -17,11 +17,11 @@ _mvn(){
 		local prev="${COMP_WORDS[COMP_CWORD-1]}"
 
 		if [[ "${cur}" == *:* ]]; then
-			local options="jetty javadoc release"
 
 			case "${prev}" in
 				jetty)
-					COMPREPLY=($(compgen -S ':' -W "${jetty_options}" -- "${cur}"))
+					local jetty_options="jetty:run jetty:war"
+					COMPREPLY=($(compgen -S ' ' -W "${jetty_options}" -- "${cur}"))
 					return 0
 					;;
 				javadoc)
@@ -32,7 +32,6 @@ _mvn(){
 					;;
 			esac
 
-			COMPREPLY=( $(compgen -S ':' -W "${options}" -- "${cur}") )
 		else
 			local clean_lifecycle="pre-clean clean post-clean"
 
@@ -47,13 +46,15 @@ _mvn(){
 
 			local plugins="jetty|javadoc|release"
 
-			if [[ "${cur}" =~ ${plugins} ]] ; then
-				COMPREPLY=( $(compgen -S ':' -W "${clean_lifecycle} ${default_lifecycle}" ) )
+			local replaced_plugins=`echo "${plugins}" | tr '|' '\n' | grep -e "^${cur}"`
+
+			if echo "${plugins}" | tr '|' '\n' | grep -q -e "^${cur}" ; then
+				COMPREPLY=( $(compgen -S ':' -W "${replaced_plugins}" -- "${cur}" ) )
 			else
-				local replaced_plugins=`echo "${plugins}" | tr '|' ' '`
 				COMPREPLY=( $(compgen -S ' ' -W "${clean_lifecycle} ${default_lifecycle} \
 				${site_lifecycle} ${replaced_plugins}" -- "${cur}") )
 			fi
+
 		fi
 
 		if [[ "${cur}" == -D* ]] ; then
