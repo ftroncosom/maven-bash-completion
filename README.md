@@ -4,7 +4,7 @@ Bash Script Completion for maven user, only for commands 'mvn' and 'mvnDebug'
 
 ### Install:
 
-`$ git clone https://pcollaog@github.com/pcollaog/maven-bash-completion.git`
+`$ git clone git@github.com:pcollaog/maven-bash-completion.git`
 
 copy the file 'maven-completion.bash' to your home dir.
 

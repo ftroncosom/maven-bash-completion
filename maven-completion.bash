@@ -48,12 +48,21 @@ _mvn(){
 
 			local replaced_plugins=`echo "${plugins}" | tr '|' '\n' | grep -e "^${cur}"`
 
-			if echo "${plugins}" | tr '|' '\n' | grep -q -e "^${cur}" ; then
-				COMPREPLY=( $(compgen -S ':' -W "${replaced_plugins}" -- "${cur}" ) )
-			else
+
+			echo "CUR [${cur}]"
+
+			if [[ ${cur} == "" ]]; then 
 				COMPREPLY=( $(compgen -S ' ' -W "${clean_lifecycle} ${default_lifecycle} \
 				${site_lifecycle} ${replaced_plugins}" -- "${cur}") )
 			fi
+
+
+			#if echo "${plugins}" | tr '|' '\n' | grep -q -e "^${cur}" ; then
+			#	COMPREPLY=( $(compgen -S ':' -W "${replaced_plugins}" -- "${cur}" ) )
+			#else
+			#	COMPREPLY=( $(compgen -S ' ' -W "${clean_lifecycle} ${default_lifecycle} \
+			#	${site_lifecycle} ${replaced_plugins}" -- "${cur}") )
+			#fi
 
 		fi
 
